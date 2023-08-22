@@ -1,0 +1,90 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <algorithm>
+
+struct Student {
+    std::string name;
+    double marks[3]; // Marks for Biology, Physics, Chemistry
+    double totalMarks;
+    int schoolRank;
+    int classRank;
+};
+
+bool compareTotalMarks(const Student& s1, const Student& s2) {
+    return s1.totalMarks > s2.totalMarks;
+}
+
+void calculateRanks(std::vector<Student>& students) {
+    // Calculate total marks and rank the students
+    for (auto& student : students) {
+        student.totalMarks = student.marks[0] + student.marks[1] + student.marks[2];
+    }
+
+    std::sort(students.begin(), students.end(), compareTotalMarks);
+
+    int rank = 1;
+    for (auto& student : students) {
+        student.schoolRank = rank;
+        rank++;
+    }
+
+    // Calculate class ranks
+    for (int classNum = 1; classNum <= 8; classNum++) {
+        int classRank = 1;
+        for (auto& student : students) {
+            if (student.name[0] == 'B' && student.name[1] == 'i' && student.name[2] == 'o') {
+                if (student.name[3] == '0' + classNum) {
+                    student.classRank = classRank;
+                    classRank++;
+                }
+            }
+            else if (student.name[0] == 'M' && student.name[1] == 'a' && student.name[2] == 't') {
+                if (student.name[3] == '0' + classNum) {
+                    student.classRank = classRank;
+                    classRank++;
+                }
+            }
+        }
+    }
+}
+
+int main() {
+    std::vector<Student> students;
+
+    // Load student data from file
+    std::ifstream inFile("student_data.txt");
+    if (!inFile.is_open()) {
+        std::cout << "Error opening file." << std::endl;
+        return 1;
+    }
+
+    while (!inFile.eof()) {
+        Student student;
+        inFile >> student.name >> student.marks[0] >> student.marks[1] >> student.marks[2];
+        students.push_back(student);
+    }
+
+    inFile.close();
+
+    calculateRanks(students);
+
+    // Print ranks to console and write to file
+    std::ofstream outFile("rank_results.txt");
+    if (!outFile.is_open()) {
+        std::cout << "Error opening file for writing." << std::endl;
+        return 1;
+    }
+
+    for (const auto& student : students) {
+        std::cout << "Name: " << student.name << "\tTotal Marks: " << student.totalMarks
+                  << "\tSchool Rank: " << student.schoolRank << "\tClass Rank: " << student.classRank << std::endl;
+
+        outFile << "Name: " << student.name << "\tTotal Marks: " << student.totalMarks
+                << "\tSchool Rank: " << student.schoolRank << "\tClass Rank: " << student.classRank << std::endl;
+    }
+
+    outFile.close();
+
+    return 0;
+}
